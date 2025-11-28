@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 AI Nhận Diện Bệnh Cây Trồng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2E8B57, #228B22);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #2E8B57;
+            background: #f0fff0;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #2E8B57;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #2E8B57, #228B22);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 139, 87, 0.3);
+        }
+
+        .upload-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview-section {
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .disease-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2E8B57;
+            margin-bottom: 10px;
+        }
+
+        .confidence {
+            font-size: 1.1em;
+            color: #495057;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .recommendation {
+            background: #e7f3ff;
+            border-left: 4px solid #1890ff;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2E8B57;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #2E8B57;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .disease-healthy {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .disease-sick {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .confidence-high { color: #28a745; }
+        .confidence-medium { color: #ffc107; }
+        .confidence-low { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌿 AI Nhận Diện Bệnh Cây Trồng</h1>
+            <p>Công nghệ AI giúp phát hiện sớm bệnh trên cây trồng</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-icon">📸</div>
+                <h3>Tải Ảnh Lên</h3>
+                <p>Chọn ảnh lá cây cần chẩn đoán (định dạng JPG, PNG, JPEG)</p>
+                
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    📁 Chọn Ảnh
+                </button>
+                
+                <div id="fileName" style="margin: 15px 0; color: #666;"></div>
+                
+                <button class="upload-btn" onclick="uploadImage()" id="predictBtn" disabled>
+                    🔍 Phân Tích Ngay
+                </button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <h3>Xem Trước Ảnh</h3>
+                <img id="imagePreview" class="image-preview" alt="Xem trước ảnh">
+                <div id="imageInfo" style="margin-top: 10px; color: #666;"></div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI đang phân tích ảnh... Vui lòng chờ trong giây lát</p>
+        </div>
+
+        <!-- Result Section -->
+        <div class="result-section" id="resultSection">
+            <h3>📊 Kết Quả Phân Tích</h3>
+            
+            <div class="result-card">
+                <div class="disease-name" id="diseaseName">Đang phân tích...</div>
+                <div class="confidence" id="confidenceText">Độ tin cậy: <span id="confidenceValue">0%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="confidenceBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="recommendation" id="recommendation">
+                <strong>💡 Khuyến nghị:</strong>
+                <p id="recommendationText">Đang phân tích khuyến nghị...</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="upload-btn" onclick="resetApp()">
+                    🔄 Phân Tích Ảnh Khác
+                </button>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h4>Phát Hiện Nhanh</h4>
+                <p>AI phân tích chỉ trong vài giây với độ chính xác cao</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌾</div>
+                <h4>Đa Dạng Cây Trồng</h4>
+                <p>Hỗ trợ nhiều loại cây trồng phổ biến</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h4>Dễ Sử Dụng</h4>
+                <p>Giao diện thân thiện, dễ dàng sử dụng</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔬</div>
+                <h4>Công Nghệ AI</h4>
+                <p>Sử dụng mô hình deep learning tiên tiến</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🌿 AI Plant Disease Detection - Bảo vệ mùa màng của bạn</p>
+            <p>© 2024 - Công nghệ AI trong nông nghiệp</p>
+        </div>
+    </div>
+
+    <script>
+        // Hiển thị preview ảnh
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Hiển thị tên file
+                document.getElementById('fileName').textContent = `📄 ${file.name}`;
+                
+                // Hiển thị preview ảnh
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // Hiển thị thông tin ảnh
+                    const img = new Image();
+                    img.onload = function() {
+                        document.getElementById('imageInfo').textContent = 
+                            `Kích thước: ${img.width}×${img.height} pixels`;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
+                // Kích hoạt nút phân tích
+                document.getElementById('predictBtn').disabled = false;
+            }
+        });
+
+        // Upload và phân tích ảnh
+        async function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('Vui lòng chọn ảnh trước khi phân tích!');
+                return;
+            }
+
+            // Hiển thị loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Lỗi kết nối đến server');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Lỗi:', error);
+                alert('Có lỗi xảy ra khi phân tích ảnh. Vui lòng thử lại!');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Hiển thị kết quả
+        function displayResults(data) {
+            const resultSection = document.getElementById('resultSection');
+            const diseaseName = document.getElementById('diseaseName');
+            const confidenceValue = document.getElementById('confidenceValue');
+            const confidenceBar = document.getElementById('confidenceBar');
+            const recommendationText = document.getElementById('recommendationText');
+
+            // Giả lập dữ liệu (thay bằng data thực từ server)
+            const result = data.prediction || "Apple__healthy";
+            const confidence = data.confidence || 0.95;
+
+            // Phân tích kết quả
+            const [plantType, condition] = result.split('__');
+            const isHealthy = condition.toLowerCase() === 'healthy';
+
+            // Hiển thị tên bệnh
+            diseaseName.innerHTML = isHealthy ? 
+                `<span class="disease-healthy">✅ ${plantType} - Khỏe Mạnh</span>` :
+                `<span class="disease-sick">⚠️ ${plantType} - ${condition}</span>`;
+
+            // Hiển thị độ tin cậy
+            const confidencePercent = (confidence * 100).toFixed(1);
+            confidenceValue.textContent = `${confidencePercent}%`;
+            
+            // Cập nhật progress bar
+            confidenceBar.style.width = `${confidencePercent}%`;
+            
+            // Đổi màu theo độ tin cậy
+            if (confidence > 0.8) {
+                confidenceValue.className = 'confidence-high';
+            } else if (confidence > 0.6) {
+                confidenceValue.className = 'confidence-medium';
+            } else {
+                confidenceValue.className = 'confidence-low';
+            }
+
+            // Hiển thị khuyến nghị
+            let recommendation = '';
+            if (isHealthy) {
+                recommendation = 'Cây trồng của bạn đang phát triển tốt. Tiếp tục chăm sóc và theo dõi định kỳ.';
+            } else {
+                switch(result) {
+                    case 'Apple__Apple_scab':
+                        recommendation = '🌿 <strong>Bệnh Ghẻ Táo:</strong> Sử dụng thuốc diệt nấm, tỉa cành thông thoáng, vệ sinh vườn sạch sẽ.';
+                        break;
+                    case 'Corn__Common_rust':
+                        recommendation = '🌽 <strong>Bệnh Gỉ Sắt Ngô:</strong> Sử dụng giống kháng bệnh, phun thuốc phòng trừ, luân canh cây trồng.';
+                        break;
+                    default:
+                        recommendation = 'Cần theo dõi và có biện pháp xử lý kịp thời. Liên hệ chuyên gia nông nghiệp để được tư vấn.';
+                }
+            }
+            recommendationText.innerHTML = recommendation;
+
+            // Hiển thị kết quả
+            resultSection.style.display = 'block';
+            
+            // Cuộn đến kết quả
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Reset app
+        function resetApp() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileName').textContent = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imageInfo').textContent = '';
+            document.getElementById('predictBtn').disabled = true;
+            document.getElementById('resultSection').style.display = 'none';
+            
+            // Cuộn lên đầu trang
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Demo dữ liệu (xóa khi kết nối với server thật)
+        function demoPredict() {
+            const demoData = {
+                prediction: "Apple__Apple_scab",
+                confidence: 0.87
+            };
+            displayResults(demoData);
+        }
+    </script>
+</body>
+</html>
